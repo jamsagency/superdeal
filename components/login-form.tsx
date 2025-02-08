@@ -1,14 +1,15 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Icons } from "@/components/icons"
+import { createClient } from "@supabase/supabase-js"
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 export function LoginForm() {
   const router = useRouter()
@@ -24,13 +25,12 @@ export function LoginForm() {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    const result = await signIn("credentials", {
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      redirect: false,
     })
 
-    if (result?.error) {
+    if (error) {
       setError("Invalid email or password")
       setIsLoading(false)
     } else {

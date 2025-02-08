@@ -62,7 +62,11 @@
     "nodemailer": "latest",
     "next-auth": "latest",
     "bcrypt": "latest",
-    "@vercel/postgres": "latest"
+    "@vercel/postgres": "latest",
+    "@supabase/supabase-js": "latest",
+    "dotenv": "latest",
+    "url": "latest",
+    "path": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

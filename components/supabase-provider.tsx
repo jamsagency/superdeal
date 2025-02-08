@@ -1,44 +1,36 @@
 "use client"
 
-import { createContext, useContext, useState, type PropsWithChildren } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+import type { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase-client"
 
-interface SupabaseContext {
-  session: any | null
-  loading: boolean
+type SupabaseContextType = {
+  user: User | null
+  session: Session | null
 }
 
-const SupabaseContext = createContext<SupabaseContext>({ session: null, loading: true })
+const SupabaseContext = createContext<SupabaseContextType>({
+  user: null,
+  session: null,
+})
 
-export function SupabaseProvider({ children }: PropsWithChildren<{}>) {
-  const [session, setSession] = useState<any | null>(null)
-  const [loading, setLoading] = useState(true)
+export const SupabaseProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
-    const session = supabase.auth.getSession()
-    session.then(({ data }) => {
-      setSession(data.session)
-      setLoading(false)
-    })
-
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      setLoading(false)
+      setUser(session?.user ?? null)
     })
 
     return () => {
-      listener.unsubscribe()
+      authListener.subscription.unsubscribe()
     }
   }, [])
 
-  return <SupabaseContext.Provider value={{ session, loading }}>{children}</SupabaseContext.Provider>
+  return <SupabaseContext.Provider value={{ user, session }}>{children}</SupabaseContext.Provider>
 }
 
-export function useSupabase() {
-  const context = useContext(SupabaseContext)
-  if (context === null) {
-    throw new Error("useSupabase must be used within a SupabaseProvider")
-  }
-  return context
-}
+export const useSupabase = () => useContext(SupabaseContext)
 

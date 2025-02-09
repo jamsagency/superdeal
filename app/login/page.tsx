@@ -1,3 +1,5 @@
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { LoginForm } from "@/components/login-form"
 
 export default function LoginPage() {
@@ -9,6 +11,9 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground">Enter your credentials to access your account</p>
         </div>
         <LoginForm />
+        <Button variant="outline" className="w-full" asChild>
+          <Link href="/">Back to Home</Link>
+        </Button>
       </div>
     </div>
   )

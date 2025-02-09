@@ -35,8 +35,6 @@ export function LoginForm() {
       }
 
       if (data?.session) {
-        // Wait a bit for the session to be properly set
-        await new Promise((resolve) => setTimeout(resolve, 500))
         router.push("/app/people")
         router.refresh()
       } else {

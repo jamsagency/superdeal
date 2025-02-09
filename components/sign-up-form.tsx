@@ -24,21 +24,36 @@ export function SignUpForm() {
     const password = formData.get("password") as string
     const name = formData.get("name") as string
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name,
+    try {
+      // Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
         },
-      },
-    })
+      })
 
-    if (error) {
-      setError(error.message)
+      if (authError) throw authError
+
+      if (authData.user) {
+        // Insert the user data into the 'users' table
+        const { error: insertError } = await supabase
+          .from("users")
+          .insert([{ id: authData.user.id, name: name, email: email }])
+
+        if (insertError) throw insertError
+
+        // Redirect to the app
+        router.push("/app/people")
+      }
+    } catch (error) {
+      console.error("Error during sign up:", error)
+      setError(error instanceof Error ? error.message : "An error occurred during sign up")
+    } finally {
       setIsLoading(false)
-    } else {
-      router.push("/app/people")
     }
   }
 

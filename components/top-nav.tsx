@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button"
 import { CommandDialog, CommandInput, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { supabase } from "@/lib/supabase-client"
+import { useSupabase } from "@/components/supabase-provider"
 
 export function TopNav() {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const { user, supabase } = useSupabase()
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut()
@@ -70,9 +71,9 @@ export function TopNav() {
 
           <Avatar>
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>JA</AvatarFallback>
+            <AvatarFallback>{user?.email ? user.email.charAt(0).toUpperCase() : "U"}</AvatarFallback>
           </Avatar>
-          <span className="text-sm text-muted-foreground">j@jams.agency</span>
+          <span className="text-sm text-muted-foreground">{user?.email || "Not logged in"}</span>
           <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             <span className="sr-only">Log out</span>

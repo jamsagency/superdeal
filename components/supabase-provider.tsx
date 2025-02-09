@@ -1,36 +1,40 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import type { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase-client"
 
 type SupabaseContextType = {
   user: User | null
   session: Session | null
+  supabase: typeof supabase
 }
 
 const SupabaseContext = createContext<SupabaseContextType>({
   user: null,
   session: null,
+  supabase: supabase,
 })
 
 export const SupabaseProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const router = useRouter()
-  const pathname = usePathname()
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const setServerSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession()
-      setSession(session)
-      setUser(session?.user ?? null)
+
+      if (session) {
+        setSession(session)
+        setUser(session.user)
+      }
     }
 
-    initializeAuth()
+    setServerSession()
 
     const {
       data: { subscription },
@@ -38,19 +42,17 @@ export const SupabaseProvider = ({ children }: { children: React.ReactNode }) =>
       setSession(session)
       setUser(session?.user ?? null)
 
-      // Only redirect if we're on a protected route and there's no session
-      const isProtectedRoute = pathname?.startsWith("/app")
-      if (isProtectedRoute && !session) {
-        router.push("/login")
+      if (session) {
+        router.refresh()
       }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [pathname, router])
+  }, [router])
 
-  return <SupabaseContext.Provider value={{ user, session }}>{children}</SupabaseContext.Provider>
+  return <SupabaseContext.Provider value={{ user, session, supabase }}>{children}</SupabaseContext.Provider>
 }
 
 export const useSupabase = () => useContext(SupabaseContext)

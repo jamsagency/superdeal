@@ -1,57 +1,51 @@
 import { createClient } from "@supabase/supabase-js"
-import bcrypt from "bcrypt"
 import dotenv from "dotenv"
-import { fileURLToPath } from "url"
-import { dirname, resolve } from "path"
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+dotenv.config({ path: ".env.local" })
 
-dotenv.config({ path: resolve(__dirname, "..", ".env.local") })
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-console.log("Environment variables:")
-console.log("SUPABASE_URL:", process.env.SUPABASE_URL)
-console.log("SUPABASE_KEY:", process.env.SUPABASE_KEY ? "[REDACTED]" : "undefined")
-
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_KEY
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error("SUPABASE_URL and SUPABASE_KEY must be set in .env.local")
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  console.error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in .env.local")
   process.exit(1)
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
 
-const EMAIL = "test@example.com"
-const PASSWORD = "SecurePassword123!"
-const NAME = "Test User"
+const EMAIL = "j@jams.agency"
+const PASSWORD = "jams"
+const NAME = "Jams"
 
 async function createUser() {
-  try {
-    // Hash the password
-    const saltRounds = 10
-    const hashedPassword = await bcrypt.hash(PASSWORD, saltRounds)
+  // First, create the user in Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email: EMAIL,
+    password: PASSWORD,
+    email_confirm: true,
+  })
 
-    // Insert the user into the database
-    const { data, error } = await supabase
-      .from("users")
-      .insert([{ name: NAME, email: EMAIL, password: hashedPassword }])
-      .select()
+  if (authError) {
+    console.error("Error creating user in Auth:", authError)
+    return
+  }
 
-    if (error) {
-      console.error("Error creating user:", error)
-      if (error.code === "23505") {
-        console.log("A user with this email already exists.")
-      } else {
-        console.log("Please check your Supabase RLS policies and table permissions.")
-      }
-      return
-    }
+  console.log("User created in Auth successfully:", authData.user)
 
-    console.log("User created successfully:", data[0])
-  } catch (error) {
-    console.error("Unexpected error:", error)
+  // Then, insert the user into the public.users table
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .insert([{ id: authData.user.id, name: NAME, email: EMAIL }])
+
+  if (userError) {
+    console.error("Error inserting user into public.users:", userError)
+  } else {
+    console.log("User inserted into public.users successfully:", userData)
   }
 }
 

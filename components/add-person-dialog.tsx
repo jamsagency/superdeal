@@ -1,11 +1,11 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { supabase } from "@/lib/supabase-client"
 
 interface AddPersonDialogProps {
   open: boolean
@@ -25,20 +25,11 @@ export function AddPersonDialog({ open, onOpenChange, onPersonAdded }: AddPerson
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/people", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, phone, company }),
-      })
+      const { data, error } = await supabase.from("people").insert([{ name, email, phone, company }]).select()
 
-      if (!response.ok) {
-        throw new Error("Failed to add person")
-      }
+      if (error) throw error
 
-      const newPerson = await response.json()
-      onPersonAdded(newPerson)
+      onPersonAdded(data[0])
       onOpenChange(false)
     } catch (error) {
       console.error("Error adding person:", error)
@@ -59,7 +50,7 @@ export function AddPersonDialog({ open, onOpenChange, onPersonAdded }: AddPerson
               <Label htmlFor="name" className="text-right">
                 Name
               </Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">
@@ -71,6 +62,7 @@ export function AddPersonDialog({ open, onOpenChange, onPersonAdded }: AddPerson
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

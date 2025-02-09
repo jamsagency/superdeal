@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,15 +26,19 @@ export function LoginForm() {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
+    console.log("Attempting login with:", email)
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
+      console.error("Login error:", error.message)
       setError("Invalid email or password")
       setIsLoading(false)
     } else {
+      console.log("Login successful:", data)
       router.push("/app/people")
     }
   }
@@ -65,6 +70,9 @@ export function LoginForm() {
             <Input id="password" name="password" type="password" disabled={isLoading} required />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
+          <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
+            Forgot password?
+          </Link>
         </CardContent>
         <CardFooter>
           <Button className="w-full" type="submit" disabled={isLoading}>

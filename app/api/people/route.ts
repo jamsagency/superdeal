@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       .from("people")
       .select("*")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .order("name", { ascending: true })
 
     if (error) throw error
 

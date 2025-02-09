@@ -32,10 +32,19 @@ export function PeopleView() {
   async function fetchPeople() {
     try {
       setIsLoading(true)
-      const { data, error } = await supabase.from("people").select("*").order("name", { ascending: true })
 
-      if (error) throw error
+      // Log the current session to verify the user is authenticated
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      console.log("Current session:", session)
 
+      const response = await fetch("/api/people")
+      if (!response.ok) {
+        throw new Error("Failed to fetch people")
+      }
+      const data = await response.json()
+      console.log("Fetched people:", data) // Log the fetched data
       setPeople(data)
       if (data.length > 0) {
         setSelectedPerson(data[0])

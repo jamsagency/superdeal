@@ -50,7 +50,7 @@ export function PeopleView() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-4 animate-spin" />
       </div>
     )
   }
@@ -72,23 +72,27 @@ export function PeopleView() {
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-15rem)]">
-              {people.map((person) => (
-                <Button
-                  key={person.id}
-                  variant="ghost"
-                  className={`w-full justify-start rounded-none ${selectedPerson?.id === person.id ? "bg-muted" : ""}`}
-                  onClick={() => setSelectedPerson(person)}
-                >
-                  <Avatar className="mr-2 h-6 w-6">
-                    <AvatarImage
-                      src={`https://api.dicebear.com/6.x/initials/svg?seed=${person.name}`}
-                      alt={person.name}
-                    />
-                    <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  {person.name}
-                </Button>
-              ))}
+              {people.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground">No contacts yet. Add your first contact!</div>
+              ) : (
+                people.map((person) => (
+                  <Button
+                    key={person.id}
+                    variant="ghost"
+                    className={`w-full justify-start rounded-none ${selectedPerson?.id === person.id ? "bg-muted" : ""}`}
+                    onClick={() => setSelectedPerson(person)}
+                  >
+                    <Avatar className="mr-2 h-6 w-6">
+                      <AvatarImage
+                        src={`https://api.dicebear.com/6.x/initials/svg?seed=${person.name}`}
+                        alt={person.name}
+                      />
+                      <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    {person.name}
+                  </Button>
+                ))
+              )}
             </ScrollArea>
           </CardContent>
         </Card>

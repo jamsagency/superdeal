@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { createClient } from "@supabase/supabase-js"
-import Link from "next/link"
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -63,11 +62,6 @@ export default function ForgotPassword() {
           </CardFooter>
         </form>
         {message && <p className="text-center mt-4">{message}</p>}
-        <div className="text-center mt-4">
-          <Link href="/login" className="text-sm text-blue-500 hover:underline">
-            Back to Login
-          </Link>
-        </div>
       </Card>
     </div>
   )

@@ -2,18 +2,28 @@
 
 import Link from "next/link"
 import { Search, LogOut } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { CommandDialog, CommandInput, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { supabase } from "@/lib/supabase-client"
 
 export function TopNav() {
   const pathname = usePathname()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error("Error logging out:", error)
+    } else {
+      router.push("/login")
+    }
+  }
 
   return (
     <header className="border-b">
@@ -63,8 +73,7 @@ export function TopNav() {
             <AvatarFallback>JA</AvatarFallback>
           </Avatar>
           <span className="text-sm text-muted-foreground">j@jams.agency</span>
-          <ThemeToggle />
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             <span className="sr-only">Log out</span>
           </Button>

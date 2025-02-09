@@ -9,9 +9,14 @@ export default function LandingPage() {
         The first CRM that focuses on people and deals. Manage your contacts, track your deals, and boost your
         productivity.
       </p>
-      <Button asChild size="lg">
-        <Link href="/login">Log in</Link>
-      </Button>
+      <div className="flex gap-4">
+        <Button asChild size="lg">
+          <Link href="/login">Log in</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link href="/signup">Sign up</Link>
+        </Button>
+      </div>
     </div>
   )
 }

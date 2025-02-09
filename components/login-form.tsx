@@ -8,9 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Icons } from "@/components/icons"
-import { createClient } from "@supabase/supabase-js"
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+import { supabase } from "@/lib/supabase-client"
 
 export function LoginForm() {
   const router = useRouter()
@@ -26,20 +24,26 @@ export function LoginForm() {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    console.log("Attempting login with:", email)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+      if (error) {
+        throw error
+      }
 
-    if (error) {
-      console.error("Login error:", error.message)
+      if (data?.session) {
+        // Force a hard reload to ensure all auth state is properly updated
+        window.location.href = "/app/people"
+      } else {
+        throw new Error("No session created")
+      }
+    } catch (error) {
+      console.error("Login error:", error)
       setError("Invalid email or password")
       setIsLoading(false)
-    } else {
-      console.log("Login successful:", data)
-      router.push("/app/people")
     }
   }
 

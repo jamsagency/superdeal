@@ -35,14 +35,17 @@ export function LoginForm() {
       }
 
       if (data?.session) {
-        // Force a hard reload to ensure all auth state is properly updated
-        window.location.href = "/app/people"
+        // Wait a bit for the session to be properly set
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        router.push("/app/people")
+        router.refresh()
       } else {
         throw new Error("No session created")
       }
     } catch (error) {
       console.error("Login error:", error)
       setError("Invalid email or password")
+    } finally {
       setIsLoading(false)
     }
   }

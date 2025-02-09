@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useSupabase } from "@/components/supabase-provider"
 
 interface AddPersonDialogProps {
   open: boolean
@@ -19,19 +18,34 @@ export function AddPersonDialog({ open, onOpenChange, onPersonAdded }: AddPerson
   const [phone, setPhone] = useState("")
   const [company, setCompany] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { supabase } = useSupabase()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const { data, error } = await supabase.from("people").insert([{ name, email, phone, company }]).select()
+      const response = await fetch("/api/people", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, phone, company }),
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        throw new Error("Failed to add person")
+      }
 
-      onPersonAdded(data[0])
+      const newPerson = await response.json()
+      console.log("New person added:", newPerson) // Log the new person data
+      onPersonAdded(newPerson)
       onOpenChange(false)
+
+      // Clear the form
+      setName("")
+      setEmail("")
+      setPhone("")
+      setCompany("")
     } catch (error) {
       console.error("Error adding person:", error)
     } finally {

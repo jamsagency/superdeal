@@ -15,6 +15,7 @@ interface Person {
   email: string
   phone: string
   company: string
+  user_id: string
 }
 
 export function PeopleView() {
@@ -55,6 +56,11 @@ export function PeopleView() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handlePersonAdded = (newPerson: Person) => {
+    setPeople([...people, newPerson])
+    setSelectedPerson(newPerson)
   }
 
   if (isLoading) {
@@ -144,14 +150,7 @@ export function PeopleView() {
         )}
       </div>
 
-      <AddPersonDialog
-        open={isAddPersonOpen}
-        onOpenChange={setIsAddPersonOpen}
-        onPersonAdded={(newPerson) => {
-          setPeople([...people, newPerson])
-          setSelectedPerson(newPerson)
-        }}
-      />
+      <AddPersonDialog open={isAddPersonOpen} onOpenChange={setIsAddPersonOpen} onPersonAdded={handlePersonAdded} />
     </div>
   )
 }

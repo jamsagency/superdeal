@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2 } from "lucide-react"
 import { AddPersonDialog } from "@/components/add-person-dialog"
+import { useSupabase } from "@/components/supabase-provider"
 
 interface Person {
   id: string
@@ -22,6 +23,7 @@ export function PeopleView() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false)
+  const { supabase } = useSupabase()
 
   useEffect(() => {
     fetchPeople()
@@ -30,11 +32,10 @@ export function PeopleView() {
   async function fetchPeople() {
     try {
       setIsLoading(true)
-      const response = await fetch("/api/people")
-      if (!response.ok) {
-        throw new Error("Failed to fetch people")
-      }
-      const data = await response.json()
+      const { data, error } = await supabase.from("people").select("*").order("name", { ascending: true })
+
+      if (error) throw error
+
       setPeople(data)
       if (data.length > 0) {
         setSelectedPerson(data[0])
@@ -50,7 +51,7 @@ export function PeopleView() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-4 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     )
   }
